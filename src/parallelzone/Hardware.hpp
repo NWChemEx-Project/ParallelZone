@@ -165,9 +165,8 @@ void Hardware::get_papi_version() {
 //     // Get device identifier via local index
 //     // XXX: This doesn't respect CUDA_VISABLE_DEVICES
 //     if( nvmlDeviceGetHandleByIndex(i, &device) ) {
-//       if(!world_rank) std::cout << "NVML Failed To Get Device Handle for IDX = " << i << std::endl;
-//       cleanup();
-//       return 1;
+//       if(!world_rank) std::cout << "NVML Failed To Get Device Handle for IDX
+//       = " << i << std::endl; cleanup(); return 1;
 //     }
 // #else
 //             // Get PCI identifier for this device
@@ -202,7 +201,8 @@ void Hardware::get_papi_version() {
 //             uuid_hashes[i] = std::hash<std::string>{}(std::string(uuid_str));
 
 //             // std::stringstream msg;
-//             // msg << "RANK = " << world_rank << " DEVICE IDX = " << i << " UUID
+//             // msg << "RANK = " << world_rank << " DEVICE IDX = " << i << "
+//             UUID
 //             // = " << uuid_str << " UUID HASH = " << uuid_hashes[i] << "\n";
 //             // std::cout << msg.str() << std::flush;
 //         }
@@ -213,9 +213,9 @@ void Hardware::get_papi_version() {
 // #ifdef ENABLE_MPI
 //         // Gather UUID Hashes
 //         MPI_Allgather(
-//           uuid_hashes.data(), cuda_device_count * sizeof(std::size_t), MPI_BYTE,
-//           gathered_uuid_hashes.data(), cuda_device_count * sizeof(std::size_t),
-//           MPI_BYTE, MPI_COMM_WORLD);
+//           uuid_hashes.data(), cuda_device_count * sizeof(std::size_t),
+//           MPI_BYTE, gathered_uuid_hashes.data(), cuda_device_count *
+//           sizeof(std::size_t), MPI_BYTE, MPI_COMM_WORLD);
 // #else
 //         std::copy(uuid_hashes.begin(), uuid_hashes.end(),
 //                   gathered_uuid_hashes.begin());
@@ -241,11 +241,13 @@ void Hardware::get_papi_version() {
 //                       std::find(cur_it, gathered_uuid_hashes.end(), uuid);
 //                     if(cur_it != gathered_uuid_hashes.end()) {
 //                         int idx =
-//                           std::distance(gathered_uuid_hashes.begin(), cur_it);
+//                           std::distance(gathered_uuid_hashes.begin(),
+//                           cur_it);
 //                         int mpi_rank = idx / cuda_device_count;
 //                         int dev_idx  = idx % cuda_device_count;
 //                         std::cout << "  RANK = " << mpi_rank
-//                                   << ", CUDA_INDEX = " << dev_idx << std::endl;
+//                                   << ", CUDA_INDEX = " << dev_idx <<
+//                                   std::endl;
 //                         cur_it++;
 //                     }
 //                 }
