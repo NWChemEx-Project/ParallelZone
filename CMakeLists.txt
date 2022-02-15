@@ -43,6 +43,10 @@ cpp_find_or_build_dependency(
                BUILD_TESTING=OFF
 )
 
+# Note that hashes may differ with different compilers when typeid is used.
+# Uncomment below to enable using typeid for hashes. 
+# add_compile_definitions(BPHASH_USE_TYPEID)
+
 cpp_find_or_build_dependency(
     bphash
     URL github.com/ryanmrichard/BPHash
@@ -51,9 +55,6 @@ cpp_find_or_build_dependency(
     BRANCH master
     CMAKE_ARGS BUILD_TESTING=OFF
 )
-# Note that hashes may differ with different compilers when typeid is used.
-# Comment below to disable using typeid for hashes. 
-target_compile_definitions(bphash PUBLIC BPHASH_USE_TYPEID)
 
 cpp_find_or_build_dependency(
     cereal
