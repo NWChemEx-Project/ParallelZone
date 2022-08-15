@@ -3,23 +3,20 @@
 namespace parallelzone::hardware {
 namespace detail_ {
 
-MPI_Datatype get_mpi_datatype( std::type_index idx ) {
-  static std::map<std::type_index, MPI_Datatype> map {
-    {std::type_index(typeid(double)), MPI_DOUBLE},
-    {std::type_index(typeid(float)),  MPI_FLOAT}
-  };
+MPI_Datatype get_mpi_datatype(std::type_index idx) {
+    static std::map<std::type_index, MPI_Datatype> map{
+      {std::type_index(typeid(double)), MPI_DOUBLE},
+      {std::type_index(typeid(float)), MPI_FLOAT}};
 
-  return map.at(idx);
+    return map.at(idx);
 }
 
-MPI_Op get_mpi_op( ReductionOp op ) {
-  static std::map< ReductionOp, MPI_Op > map {
-    { ReductionOp::Min, MPI_MIN },
-    { ReductionOp::Max, MPI_MAX },
-    { ReductionOp::Sum, MPI_SUM }
-  };
+MPI_Op get_mpi_op(ReductionOp op) {
+    static std::map<ReductionOp, MPI_Op> map{{ReductionOp::Min, MPI_MIN},
+                                             {ReductionOp::Max, MPI_MAX},
+                                             {ReductionOp::Sum, MPI_SUM}};
 
-  return map.at(op);
+    return map.at(op);
 }
 
 struct RAMPIMPL {
@@ -38,25 +35,28 @@ struct RAMPIMPL {
     /// Total size of the RAM
     size_type m_size = 0;
 
+    // -----------------------------------------------------------------------------
+    // -- MPI all-to-one operations
+    // -----------------------------------------------------------------------------
 
-// -----------------------------------------------------------------------------
-// -- MPI all-to-one operations
-// -----------------------------------------------------------------------------
+    template<typename InputType>
+    std::optional<InputType> gather_impl(InputType send_data) {
+        InputType recv_data;
+        MPI_Gather(
+          &send_data, 1, get_mpi_datatype(std::type_index(typeid(InputType))),
+          &recv_data, 1, get_mpi_datatype(std::type_index(typeid(InputType))),
+          0, comm_);
+        return (this->rank == root) ? recv_data : std::nullopt;
+    }
 
-  template<typename InputType>
-  std::optional<InputType> gather_impl(InputType send_data) {
-    InputType recv_data;
-    MPI_Gather( &send_data, 1, get_mpi_datatype(std::type_index(typeid(InputType))), &recv_data, 1, get_mpi_datatype(std::type_index(typeid(InputType))), 0, comm_ );
-    return (this->rank == root) ? recv_data : std::nullopt;
-  }
-
-  template<typename InputType, typename FtorType>
-  std::optional<InputType> reduce_impl(InputType send_data, FtorType&& fxn) {
-    InputType recv_data;
-    MPI_Reduce( &send_data, &recv_data, 1, get_mpi_datatype(std::type_index(typeid(InputType))), get_mpi_op(fxn), 0, comm_ );
-    return (this->rank == root) ? recv_data : std::nullopt;
-  }
-
+    template<typename InputType, typename FtorType>
+    std::optional<InputType> reduce_impl(InputType send_data, FtorType&& fxn) {
+        InputType recv_data;
+        MPI_Reduce(&send_data, &recv_data, 1,
+                   get_mpi_datatype(std::type_index(typeid(InputType))),
+                   get_mpi_op(fxn), 0, comm_);
+        return (this->rank == root) ? recv_data : std::nullopt;
+    }
 };
 
 } // namespace detail_
