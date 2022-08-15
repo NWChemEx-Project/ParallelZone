@@ -3,6 +3,25 @@
 namespace parallelzone::hardware {
 namespace detail_ {
 
+MPI_Datatype get_mpi_datatype( std::type_index idx ) {
+  static std::map<std::type_index, MPI_Datatype> map {
+    {std::type_index(typeid(double)), MPI_DOUBLE},
+    {std::type_index(typeid(float)),  MPI_FLOAT}
+  };
+
+  return map.at(idx);
+}
+
+MPI_Op get_mpi_op( ReductionOp op ) {
+  static std::map< ReductionOp, MPI_Op > map {
+    { ReductionOp::Min, MPI_MIN },
+    { ReductionOp::Max, MPI_MAX },
+    { ReductionOp::Sum, MPI_SUM }
+  };
+
+  return map.at(op);
+}
+
 struct RAMPIMPL {
     using parent_type = RAM;
 
@@ -18,6 +37,26 @@ struct RAMPIMPL {
 
     /// Total size of the RAM
     size_type m_size = 0;
+
+
+// -----------------------------------------------------------------------------
+// -- MPI all-to-one operations
+// -----------------------------------------------------------------------------
+
+  template<typename InputType>
+  std::optional<InputType> gather_impl(InputType send_data) {
+    InputType recv_data;
+    MPI_Gather( &send_data, 1, get_mpi_datatype(std::type_index(typeid(InputType))), &recv_data, 1, get_mpi_datatype(std::type_index(typeid(InputType))), 0, comm_ );
+    return (this->rank == root) ? recv_data : std::nullopt;
+  }
+
+  template<typename InputType, typename FtorType>
+  std::optional<InputType> reduce_impl(InputType send_data, FtorType&& fxn) {
+    InputType recv_data;
+    MPI_Reduce( &send_data, &recv_data, 1, get_mpi_datatype(std::type_index(typeid(InputType))), get_mpi_op(fxn), 0, comm_ );
+    return (this->rank == root) ? recv_data : std::nullopt;
+  }
+
 };
 
 } // namespace detail_
@@ -58,14 +97,14 @@ RAM::size_type RAM::total_space() const noexcept {
 // -----------------------------------------------------------------------------
 // -- MPI all-to-one operations
 // -----------------------------------------------------------------------------
-
-RAM::gather_return_type<double> RAM::gather(double input) const {
-    throw std::runtime_error("NYI");
+template<typename InputType>
+std::optional<InputType> RAM::gather(InputType input) const {
+    return m_pimpl_->gather_impl(input);
 }
 
-RAM::reduce_return_type<double, double> RAM::reduce(double input,
-                                                    double fxn) const {
-    throw std::runtime_error("NYI");
+template<typename InputType, typename FtorType>
+std::optional<InputType> RAM::reduce(InputType input, FtorType&& fxn) const {
+    return m_pimpl_->reduce_impl(input, std::forward<FtorType>(fxn));
 }
 
 // -----------------------------------------------------------------------------

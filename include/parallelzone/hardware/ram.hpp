@@ -2,6 +2,17 @@
 #include <memory>
 #include <optional>
 #include <vector>
+#include <typeindex>
+#include <typeinfo>
+#include <stdexcept>
+#include <map>
+#include <mpi.h>
+
+namespace parallelzone {
+/** @brief Provides enum class for possible reduction ops that maps to native MPI ops
+ */
+  enum class ReductionOp : int { Sum, Min, Max };
+}
 
 namespace parallelzone::hardware {
 
@@ -153,7 +164,8 @@ public:
      *          std::optional returned to the ResourceSet which owns *this has
      *          a value.
      */
-    gather_return_type<double> gather(double input) const;
+    template<typename InputType>  
+    std::optional<InputType> gather(InputType input) const;
 
     /** @brief Given the type of the input, @p InputType, and the type of the
      *         reduction functor, @p FxnType, this will be the type of the
@@ -163,21 +175,20 @@ public:
      *  @tparam FxnType Type type of the functor doing the reduction.
      *
      */
-    template<typename InputType, typename FxnType>
-    using reduce_return_type = std::optional<InputType>;
 
     /** @brief Collects data from all members of the RuntimeView and reduces it
-     *         to the ResourceSet which owns *this.
+     *         to the ResourceSet which owns *this. Invokes MPI_Reduce to perform reduction.
      *
      *
-     *  @tparam InputType The type of the data being reduced.
+     *  @tparam InputType The type of the data being reduced and should have an associated MPI data type
      *  @tparam FxnType   The type of the functor doing the reduction.
      *
      *  @return The result of the reduction. Only the ResourceSet which owns
      *          *this has a value. All other ResourceSet instances get back an
      *          empty `std::optional`
      */
-    reduce_return_type<double, double> reduce(double input, double fxn) const;
+    template<typename InputType, typename FtorType>  
+    std::optional<InputType> reduce(InputType input, FtorType&& fxn) const;
 
     // -------------------------------------------------------------------------
     // -- Utility methods
