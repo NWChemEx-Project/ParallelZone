@@ -112,6 +112,28 @@ RuntimeView::const_range RuntimeView::equal_range(
     throw std::runtime_error("NYI");
 }
 
+RuntimeView::logger_reference RuntimeView::progress_logger() {
+    return m_pimpl_->progress_logger();
+}
+
+RuntimeView::logger_reference RuntimeView::debug_logger() {
+    return m_pimpl_->debug_logger();
+}
+
+// -----------------------------------------------------------------------------
+// -- Setters
+// -----------------------------------------------------------------------------
+
+void RuntimeView::set_progress_logger(logger_type&& l) {
+    m_pimpl_->m_progress_logger_pointer =
+      std::make_unique<logger_type>(std::move(l));
+}
+
+void RuntimeView::set_debug_logger(logger_type&& l) {
+    m_pimpl_->m_debug_logger_pointer =
+      std::make_unique<logger_type>(std::move(l));
+}
+
 // -----------------------------------------------------------------------------
 // -- MPI all-to-all methods
 // -----------------------------------------------------------------------------

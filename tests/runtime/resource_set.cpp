@@ -62,4 +62,14 @@ TEST_CASE("ResourceSet") {
 
         // TODO: Test non-empty
     }
+
+    SECTION("progress_logger") {
+        // TODO: Set and test progress logger
+        REQUIRE_THROWS_AS(defaulted.progress_logger(), std::runtime_error);
+    }
+
+    SECTION("debug_logger") {
+        // TODO: Set and test debug logger
+        REQUIRE_THROWS_AS(defaulted.debug_logger(), std::runtime_error);
+    }
 }

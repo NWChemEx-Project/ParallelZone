@@ -44,7 +44,8 @@ endif()
 cpp_find_or_build_dependency(
     MADworld
     URL github.com/m-a-d-n-e-s-s/madness
-    VERSION 58437dd272609651c546d57d1a7f0a4a3b0377bd
+    #VERSION 20d4d7cffbbc98dd7b7d6a5feb7d68f1df067cd6 
+    VERSION 997e8b458c4234fb6c8c2781a5df59cb14b7e700
     BUILD_TARGET MADworld
     FIND_TARGET MADworld
     CMAKE_ARGS ENABLE_UNITTESTS=OFF

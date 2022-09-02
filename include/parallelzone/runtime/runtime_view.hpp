@@ -70,6 +70,12 @@ public:
     /// Type of a read-only reference to a resource_set_type object
     using const_resource_set_reference = const resource_set_type&;
 
+    /// Type of a Logger
+    using logger_type = Logger;
+
+    /// Type of a read/write reference to a logger_type object
+    using logger_reference = logger_type&;
+
     // TODO: Write an iterator class
     /// Type of an interator over a range of resource_set_type instances
     using const_iterator = int;
@@ -353,6 +359,46 @@ public:
      *  @throw None No throw guarantee.
      */
     const_range equal_range(const_ram_reference ram) const;
+
+    /**
+     * @brief Get progress logger for this RuntimeView
+     *
+     * This logger is intended to print progress information to a specified
+     * output associated with this RuntimeView. Defaults to root-only
+     * print.
+     *
+     * @returns Logger instance intended for progress output associated with
+     *          this runtime view.
+     */
+    logger_reference progress_logger();
+
+    /**
+     * @brief Get debug logger for this RuntimeView
+     *
+     * This logger is intended to print debug information to a specified
+     * output associated with this RuntimeView. Defaults to root-only
+     * print.
+     *
+     * @returns Logger instance intended for debug output associated with
+     *          this runtime view.
+     */
+    logger_reference debug_logger();
+
+    /**
+     * @brief Set progress logger for this RuntimeView
+     *
+     * @param[in] l Logger instance to override the current progress logger
+     *              for this instance.
+     */
+    void set_progress_logger(logger_type&& l);
+
+    /**
+     * @brief Set debug logger for this RuntimeView
+     *
+     * @param[in] l Logger instance to override the current debug logger
+     *              for this instance.
+     */
+    void set_debug_logger(logger_type&& l);
 
     // -------------------------------------------------------------------------
     // -- MPI all-to-all methods

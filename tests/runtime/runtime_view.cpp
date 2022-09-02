@@ -1,4 +1,6 @@
 #include "../test_parallelzone.hpp"
+#include <iostream>
+#include <sstream>
 
 using namespace parallelzone::runtime;
 
@@ -158,6 +160,38 @@ TEST_CASE("RuntimeView") {
         // TODO: Uncomment when operator== works
         // REQUIRE(defaulted == argc_argv_copy);
         // REQUIRE(argc_argv == defaulted_copy);
+    }
+
+    SECTION("progress_logger") {
+        // Redirect STDOUT to string
+        std::stringstream str;
+        auto cout_rdbuf = std::cout.rdbuf(str.rdbuf());
+
+        // Print something to progress logger
+        argc_argv.progress_logger().stream()
+          << "Hello from " << argc_argv.madness_world().rank() << std::flush;
+
+        // Reset STDOUT
+        std::cout.rdbuf(cout_rdbuf);
+
+        // Check output was only on root rank
+        REQUIRE(str.str() == "Hello from 0");
+    }
+
+    SECTION("debug_logger") {
+        // Redirect STDERR to string
+        std::stringstream str;
+        auto cerr_rdbuf = std::cerr.rdbuf(str.rdbuf());
+
+        // Print something to debug logger
+        argc_argv.debug_logger().stream()
+          << "Hello from " << argc_argv.madness_world().rank() << std::flush;
+
+        // Reset STDERR
+        std::cerr.rdbuf(cerr_rdbuf);
+
+        // Check output was only on root rank
+        REQUIRE(str.str() == "Hello from 0");
     }
 
     SECTION("operator==/operator!=") {

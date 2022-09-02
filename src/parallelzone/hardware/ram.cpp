@@ -1,4 +1,5 @@
 #include <parallelzone/hardware/ram.hpp>
+#include <stdexcept>
 
 namespace parallelzone::hardware {
 namespace detail_ {

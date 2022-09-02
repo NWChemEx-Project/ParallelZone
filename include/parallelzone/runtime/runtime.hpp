@@ -8,4 +8,4 @@
  */
 
 #include <parallelzone/runtime/resource_set.hpp>
-#include <parallelzone/runtime/runtime_class.hpp>
+#include <parallelzone/runtime/runtime_view.hpp>

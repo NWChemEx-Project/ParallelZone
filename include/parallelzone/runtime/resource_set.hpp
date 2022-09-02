@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 #include <parallelzone/hardware/ram.hpp>
+#include <parallelzone/logger.hpp>
 
 namespace parallelzone::runtime {
 
@@ -41,6 +42,12 @@ public:
 
     /// The type of a pointer to the PIMPL
     using pimpl_pointer = std::unique_ptr<pimpl_type>;
+
+    /// Type of a Logger
+    using logger_type = Logger;
+
+    /// Type of a read/write reference to a logger_type object
+    using logger_reference = logger_type&;
 
     /** @brief Creates an empty ResourceSet
      *
@@ -230,6 +237,44 @@ public:
      *  @return False if *this is value equal to @p rhs, and true otherwise.
      */
     bool operator!=(const ResourceSet& rhs) const;
+
+    /**
+     * @brief Get progress logger for this ResourceSet
+     *
+     * This logger is intended to print progress information to a specified
+     * output associated with this ResourceSet.
+     *
+     * @returns Logger instance intended for progress output associated with
+     *          this resource set.
+     */
+    logger_reference progress_logger();
+
+    /**
+     * @brief Get debug logger for this ResourceSet
+     *
+     * This logger is intended to print debug information to a specified
+     * output associated with this ResourceSet.
+     *
+     * @returns Logger instance intended for debug output associated with
+     *          this resource set.
+     */
+    logger_reference debug_logger();
+
+    /**
+     * @brief Set progress logger for this ResourceSet
+     *
+     * @param[in] l Logger instance to override the current progress logger
+     *              for this instance.
+     */
+    void set_progress_logger(logger_type&& l);
+
+    /**
+     * @brief Set debug logger for this ResourceSet
+     *
+     * @param[in] l Logger instance to override the current debug logger
+     *              for this instance.
+     */
+    void set_debug_logger(logger_type&& l);
 
 private:
     /// True if this instance has a PIMPL, and false otherwise

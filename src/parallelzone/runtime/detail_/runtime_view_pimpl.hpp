@@ -3,6 +3,16 @@
 
 namespace parallelzone::runtime::detail_ {
 
+inline std::shared_ptr<Logger> make_default_stdout_logger(madness::World& w) {
+    return w.rank() ? std::make_shared<Logger>(make_null_logger()) :
+                      std::make_shared<Logger>(make_stdout_logger());
+}
+
+inline std::shared_ptr<Logger> make_default_stderr_logger(madness::World& w) {
+    return w.rank() ? std::make_shared<Logger>(make_null_logger()) :
+                      std::make_shared<Logger>(make_stderr_logger());
+}
+
 struct RuntimeViewPIMPL {
     /// Type of the class this PIMPL implements
     using parent_type = RuntimeView;
@@ -18,6 +28,15 @@ struct RuntimeViewPIMPL {
 
     /// Ultimately a typedef of RuntimeView::madness_world_reference
     using madness_world_reference = parent_type::madness_world_reference;
+
+    /// Logger type
+    using logger_type = parent_type::logger_type;
+
+    /// Read/write Logger reference
+    using logger_reference = parent_type::logger_reference;
+
+    /// Logger instance pointer
+    using logger_pointer = std::shared_ptr<logger_type>;
 
     /// Ultimately a typedef of RuntimeView::argc_type
     using argc_type = parent_type::argc_type;
@@ -44,13 +63,32 @@ struct RuntimeViewPIMPL {
      *  return m_resource_sets[r] for rank r.
      */
     resource_set_container m_resource_sets;
+
+    /// Progress Logger
+    logger_pointer m_progress_logger_pointer;
+
+    /// Debug Logger
+    logger_pointer m_debug_logger_pointer;
+
+    logger_reference progress_logger() {
+        if(!m_progress_logger_pointer)
+            throw std::runtime_error("No Progress Logger");
+        return *m_progress_logger_pointer;
+    }
+
+    logger_reference debug_logger() {
+        if(!m_debug_logger_pointer) throw std::runtime_error("No Debug Logger");
+        return *m_debug_logger_pointer;
+    }
 };
 
 inline RuntimeViewPIMPL::RuntimeViewPIMPL(bool did_i_start_madness,
                                           madness_world_reference world) :
   m_did_i_start_madness(did_i_start_madness),
   m_world(world),
-  m_resource_sets() {}
+  m_resource_sets(),
+  m_progress_logger_pointer(make_default_stdout_logger(world)),
+  m_debug_logger_pointer(make_default_stderr_logger(world)) {}
 
 inline RuntimeViewPIMPL::~RuntimeViewPIMPL() noexcept {
     if(!m_did_i_start_madness) return;
