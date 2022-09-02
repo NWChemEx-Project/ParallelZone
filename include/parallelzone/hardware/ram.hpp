@@ -1,18 +1,19 @@
 #pragma once
+#include <map>
 #include <memory>
+#include <mpi.h>
 #include <optional>
-#include <vector>
+#include <stdexcept>
 #include <typeindex>
 #include <typeinfo>
-#include <stdexcept>
-#include <map>
-#include <mpi.h>
+#include <vector>
 
 namespace parallelzone {
-/** @brief Provides enum class for possible reduction ops that maps to native MPI ops
+/** @brief Provides enum class for possible reduction ops that maps to native
+ * MPI ops
  */
-  enum class ReductionOp : int { Sum, Min, Max };
-}
+enum class ReductionOp : int { Sum, Min, Max };
+} // namespace parallelzone
 
 namespace parallelzone::hardware {
 
@@ -164,7 +165,7 @@ public:
      *          std::optional returned to the ResourceSet which owns *this has
      *          a value.
      */
-    template<typename InputType>  
+    template<typename InputType>
     std::optional<InputType> gather(InputType input) const;
 
     /** @brief Given the type of the input, @p InputType, and the type of the
@@ -177,17 +178,19 @@ public:
      */
 
     /** @brief Collects data from all members of the RuntimeView and reduces it
-     *         to the ResourceSet which owns *this. Invokes MPI_Reduce to perform reduction.
+     *         to the ResourceSet which owns *this. Invokes MPI_Reduce to
+     * perform reduction.
      *
      *
-     *  @tparam InputType The type of the data being reduced and should have an associated MPI data type
+     *  @tparam InputType The type of the data being reduced and should have an
+     * associated MPI data type
      *  @tparam FxnType   The type of the functor doing the reduction.
      *
      *  @return The result of the reduction. Only the ResourceSet which owns
      *          *this has a value. All other ResourceSet instances get back an
      *          empty `std::optional`
      */
-    template<typename InputType, typename FtorType>  
+    template<typename InputType, typename FtorType>
     std::optional<InputType> reduce(InputType input, FtorType&& fxn) const;
 
     // -------------------------------------------------------------------------
