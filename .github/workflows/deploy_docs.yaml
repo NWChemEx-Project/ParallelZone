@@ -5,6 +5,7 @@ on:
       - master
       - automate-versioning
 
+
 jobs:
   Build-Documentation:
     uses: NWChemEx-Project/.github/.github/workflows/deploy_docs_tmpl.yaml@automate-versioning
