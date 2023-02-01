@@ -12,3 +12,4 @@ jobs:
     with:
       target: parallelzone_cxx_api
       dependencies: cmake doxygen graphviz sphinx
+      skip_doxygen: false
