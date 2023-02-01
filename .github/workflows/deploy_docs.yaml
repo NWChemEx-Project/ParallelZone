@@ -7,7 +7,7 @@ on:
 
 jobs:
   Build-Documentation:
-    uses: NWChemEx-Project/.github/.github/workflows/deploy_docs_tmpl.yaml@automate-versioning
+    uses: NWChemEx-Project/.github/.github/workflows/deploy_docs_tmpl.yaml@master
     with:
       target: parallelzone_cxx_api
       dependencies: cmake doxygen graphviz sphinx
