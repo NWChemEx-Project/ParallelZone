@@ -18,12 +18,12 @@ jobs:
     secrets:
       CPP_GITHUB_TOKEN: ${{ secrets.CPP_GITHUB_TOKEN }}
 
-  # build-with-clang:
-  #   uses: NWChemEx-Project/.github/.github/workflows/c-cpp_tmpl.yaml@master
-  #   with: 
-  #     dependencies: 'ninja clang gcovr cmake openmpi'
-  #     gcc-build: false
-  #     clang-build: true
-  #     ninja_build: true
-  #   secrets:
-  #     CPP_GITHUB_TOKEN: ${{ secrets.CPP_GITHUB_TOKEN }}
+  build-with-clang:
+    uses: NWChemEx-Project/.github/.github/workflows/c-cpp_tmpl.yaml@separate-build-test
+    with: 
+      dependencies: 'ninja clang gcovr cmake openmpi'
+      gcc-build: false
+      clang-build: true
+      ninja_build: true
+    secrets:
+      CPP_GITHUB_TOKEN: ${{ secrets.CPP_GITHUB_TOKEN }}
