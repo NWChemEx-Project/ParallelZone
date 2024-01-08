@@ -30,8 +30,8 @@ set(
     CACHE STRING "" FORCE
 )
 
-include(get_cmaize)
 include(nwx_versions)
+include(get_cmaize)
 
 ### Options ###
 # These are the default values, used only if the user hasn't already set them.

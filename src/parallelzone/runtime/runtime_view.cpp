@@ -42,6 +42,23 @@ auto start_mpi(int argc, char** argv, const MPI_Comm& comm) {
                                         std::move(log));
 }
 
+// start mpi with a callback initialization function
+template <typename T>
+auto start_mpi_callback(int argc, char** argv, const MPI_Comm& comm,
+                        T* callback_init) {
+    int mpi_initialized;
+    MPI_Initialized(&(mpi_initialized));
+    if(!mpi_initialized) {
+      if(comm == MPI_COMM_WORLD) callback_init(argc, argv);
+      else callback_init(argc, argv, comm, true);
+    }
+    mpi_helpers::CommPP commpp(comm);
+    auto log         = LoggerFactory::default_global_logger(commpp.me());
+    using pimpl_type = detail_::RuntimeViewPIMPL;
+    return std::make_shared<pimpl_type>(!mpi_initialized, commpp,
+                                        std::move(log));
+}
+
 } // namespace
 
 // -----------------------------------------------------------------------------

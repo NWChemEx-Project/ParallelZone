@@ -110,6 +110,17 @@ public:
      */
     RuntimeView();
 
+    /** @brief Creates a RuntimeView which wraps MPI_COMM_WORLD with callback initialization
+     *         function.
+     *
+     *  The default ctor is a special case of the argc/argv ctor which assumes
+     *  that argc is 0 and argv is a nullptr. See the argc/argv ctor's
+     *  description for more details.
+     *
+     */
+    template <typename T>
+    RuntimeView(T* callback_init);
+
     /** @brief Initializes the runtime given the arguments to `main`
      *
      *  In C/C++ the `main` function takes two positional arguments, @p argc
