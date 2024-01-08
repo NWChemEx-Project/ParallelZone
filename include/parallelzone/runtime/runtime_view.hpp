@@ -110,8 +110,8 @@ public:
      */
     RuntimeView();
 
-    /** @brief Creates a RuntimeView which wraps MPI_COMM_WORLD with callback initialize
-     *         function.
+    /** @brief Creates a RuntimeView which wraps MPI_COMM_WORLD with a 
+     *         callback initialize function.
      *
      *  The default ctor is a special case of the argc/argv ctor which assumes
      *  that argc is 0 and argv is a nullptr. See the argc/argv ctor's
@@ -121,7 +121,7 @@ public:
      *
      */
     template <typename T>
-    RuntimeView(T* callback_init);
+    RuntimeView(T* callback_init(argc_type, argv_type, bool));
 
     /** @brief Initializes the runtime given the arguments to `main`
      *
@@ -139,6 +139,27 @@ public:
      */
     RuntimeView(argc_type argc, argv_type argv);
 
+    /** @brief Initializes the runtime given the arguments to `main` with a 
+     *         callback initialize function.
+     *
+     *  In C/C++ the `main` function takes two positional arguments, @p argc
+     *  and @p argv. This ctor simply forwards @p argc and @p argv to the
+     *  primary ctor (and sets `comm = MPI_COMM_WORLD`). See the primary ctor's
+     *  description for more details.
+     *
+     *  @param[in] argc The number of arguments the program was called with.
+     *                  In conventional usage, @p argc is >= 1, but a value of 0
+     *                  is allowed if @p argv is a nullptr.
+     *  @param[in] argv The argument to the program. In conventional usage
+     *                  @p argv is minimally the name of the program. @p argv
+     *                  may be a nullptr if @p argc is 0.
+     *  @param[in] callback_init The callback initialize function.
+     *
+     */
+    template <typename T>
+    RuntimeView(argc_type argc, argv_type argv,
+		T* callback_init(argc_type, argv_type, bool));
+
     /** @brief Creates a RuntimeView which aliases the provided MPI runtime.
      *
      *  This ctor is primarily meant for initializing a RuntimeView instance
@@ -149,6 +170,22 @@ public:
      *  @param[in] comm The MPI_Comm this RuntimeView should alias.
      */
     explicit RuntimeView(mpi_comm_type comm);
+
+    /** @brief Creates a RuntimeView which aliases the provided MPI runtime and
+     *         two callback initialize functions.
+     *
+     *  This ctor is primarily meant for initializing a RuntimeView instance
+     *  after MPI has already been started. This ctor dispatches to the primary
+     *  ctor by passing `argc = 0` and `argv = nullptr`. See the primary ctor
+     *  documentation for more details.
+     *
+     *  @param[in] comm The MPI_Comm this RuntimeView should alias.
+     *  @param[in] callback_init_1 The first callback initialize function.
+     *  @param[in] callback_init_2 The second callback initialize function.
+     */
+    template <typename T>
+    RuntimeView(mpi_comm_type comm, T* callback_init_1(argc_type, argv_type, bool),
+		T* callback_init_2(argc_type, argv_type, mpi_comm_type, bool));
 
     /** @brief Primary ctor for creating a new RuntimeView
      *
@@ -173,6 +210,37 @@ public:
      *                        case if we also initialized MPI).
      */
     RuntimeView(argc_type argc, argv_type argv, mpi_comm_type comm);
+
+    /** @brief Primary ctor for creating a new RuntimeView with two callback
+     *         initialize functions.
+     *
+     *  Most of the other ctors dispatch to this ctor. The ctor first determines
+     *  if CommPP has been initialized. If CommPP has not been initialized,
+     *  CommPP will be initialized and the resulting RuntimeView instance will
+     *  be responsible for tearing down CommPP when it is no longer in use
+     *  (as determined by an internal counter). After ensuring CommPP
+     *  is initialized, this ctor will collect information about the computer
+     *  and initialize the internal ResourceSets with said information.
+     *
+     *  @param[in] argc The number of arguments the program was called with.
+     *                  In conventional usage, @p argc is >= 1, but a value of 0
+     *                  is allowed if @p argv is a nullptr.
+     *  @param[in] argv The argument to the program. In conventional usage
+     *                  @p argv is minimally the name of the program. @p argv
+     *                  may be a nullptr if @p argc is 0.
+     *  @param[in] comm The MPI_Comm this RuntimeView should alias.
+     *
+     *  @param[in] callback_init_1 The first callback initialize function.
+     *  @param[in] callback_init_2 The second callback initialize function.
+     *
+     *  @throw std::bad_alloc if there is a problem allocating the PIMPL. Strong
+     *                        throw guarantee (not actually sure this is the
+     *                        case if we also initialized MPI).
+     */
+    template <typename T>
+    RuntimeView(argc_type argc, argv_type argv, mpi_comm_type comm
+		T* callback_init_1(argc_type, argv_type, bool),
+                T* callback_init_2(argc_type, argv_type, mpi_comm_type, bool));
 
     /** @brief Ctor for explicitly setting the state of the RuntimeView.
      *
@@ -257,6 +325,20 @@ public:
      *  @throw None No throw guarantee.
      */
     ~RuntimeView() noexcept;
+     
+    /** @brief Releases the present RuntimeView instance with a callback finalize
+     *         function
+     *
+     *  RuntimeViews behave somewhat like a shared_ptr. Copies of a RuntimeView
+     *  increment an internal counter. As long as the inernal counter is
+     *  non-zero the resources (i.e., MPI) will not be finalized.
+     *  When the counter reaches zero (and assuming the original RuntimeView
+     *  actually initialized MPI) MPI will be finalized.
+     *
+     *  @throw None No throw guarantee.
+     */
+    template <typename T>
+    ~RuntimeView(T* callback_finalize()) noexcept;
 
     // -------------------------------------------------------------------------
     // -- Getters

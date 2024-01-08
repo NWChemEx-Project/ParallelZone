@@ -45,8 +45,8 @@ auto start_mpi(int argc, char** argv, const MPI_Comm& comm) {
 // start mpi with a callback initialization function
 template <typename T>
 auto start_mpi_callback(int argc, char** argv, const MPI_Comm& comm,
-                        T (*callback_init_1)(int, char**, bool), 
-			T (*callback_init_2)(int, char**, const MPI_Comm&, bool)){
+                        T* callback_init_1(int, char**, bool), 
+			T* callback_init_2(int, char**, const MPI_Comm&, bool)){
     int mpi_initialized;
     MPI_Initialized(&(mpi_initialized));
     if(!mpi_initialized) {
@@ -68,13 +68,41 @@ auto start_mpi_callback(int argc, char** argv, const MPI_Comm& comm,
 
 RuntimeView::RuntimeView() : RuntimeView(0, nullptr) {}
 
+template <typename T>
+RuntimeView::RuntimeView(T* callback_init(argc_type, argv_type, bool) : 
+		RuntimeView(0, nullptr, T* callback_init(argc_type, argv_type, bool)) {}
+
 RuntimeView::RuntimeView(argc_type argc, argv_type argv) :
   RuntimeView(argc, argv, MPI_COMM_WORLD) {}
 
+template <typename T>
+RuntimeView::RuntimeView(argc_type argc, argv_type argv, 
+	T* callback_init(argc_type, argv_type, bool)) :
+  RuntimeView(argc, argv, MPI_COMM_WORLD, T* callback_init(argc_type, argv_type, bool)) {}
+
 RuntimeView::RuntimeView(mpi_comm_type comm) : RuntimeView(0, nullptr, comm) {}
+
+template <typename T>
+RuntimeView::RuntimeView(mpi_comm_type comm, 
+	T* callback_init_1(argc_type, argv_type, bool),
+	T* callback_init_2(argc_type, argv_type, mpi_comm_type, bool)) : 
+  RuntimeView(0, nullptr, comm, T* callback_init(argc_type, argv_type, bool)
+	      T* callback_init_2(argc_type, argv_type, mpi_comm_type, bool)) {}
 
 RuntimeView::RuntimeView(int argc, char** argv, mpi_comm_type comm) :
   RuntimeView(start_mpi(argc, argv, comm)) {}
+
+template <typename T>
+RuntimeView::RuntimeView(int argc, char** argv, mpi_comm_type comm, 
+		T* callback_init(argc_type, argv_type, bool)) :
+  RuntimeView(start_mpi(argc, argv, comm, T* callback_init(argc_type, argv_type, bool), nullptr)) {}
+
+template <typename T>
+RuntimeView::RuntimeView(int argc, char** argv, mpi_comm_type comm, 
+                T* callback_init_1(argc_type, argv_type, bool), 
+		T* callback_init_2(argc_type, argv_type, mpi_comm_type, bool)) :
+  RuntimeView(start_mpi(argc, argv, comm, T* callback_init_1(argc_type, argv_type, bool),
+		        T* callback_init_2(argc_type, argv_type, mpi_comm_type, bool))) {}
 
 RuntimeView::RuntimeView(pimpl_pointer pimpl) noexcept :
   m_pimpl_(std::move(pimpl)) {}
@@ -89,6 +117,10 @@ RuntimeView& RuntimeView::operator=(RuntimeView&& rhs) noexcept = default;
 
 RuntimeView::~RuntimeView() noexcept = default;
 
+template <typename T>
+RuntimeView::~RuntimeView(T* callback_finalize()) noexcept {
+    callback_finalize();
+}
 // -----------------------------------------------------------------------------
 // -- Getters
 // -----------------------------------------------------------------------------
