@@ -45,12 +45,13 @@ auto start_mpi(int argc, char** argv, const MPI_Comm& comm) {
 // start mpi with a callback initialization function
 template <typename T>
 auto start_mpi_callback(int argc, char** argv, const MPI_Comm& comm,
-                        T* callback_init) {
+                        T (*callback_init_1)(int, char**, bool), 
+			T (*callback_init_2)(int, char**, const MPI_Comm&, bool)){
     int mpi_initialized;
     MPI_Initialized(&(mpi_initialized));
     if(!mpi_initialized) {
-      if(comm == MPI_COMM_WORLD) callback_init(argc, argv);
-      else callback_init(argc, argv, comm, true);
+      if(comm == MPI_COMM_WORLD) callback_init_1(argc, argv, true);
+      else callback_init_2(argc, argv, comm, true);
     }
     mpi_helpers::CommPP commpp(comm);
     auto log         = LoggerFactory::default_global_logger(commpp.me());

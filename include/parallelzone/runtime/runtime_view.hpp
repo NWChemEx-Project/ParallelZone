@@ -110,12 +110,14 @@ public:
      */
     RuntimeView();
 
-    /** @brief Creates a RuntimeView which wraps MPI_COMM_WORLD with callback initialization
+    /** @brief Creates a RuntimeView which wraps MPI_COMM_WORLD with callback initialize
      *         function.
      *
      *  The default ctor is a special case of the argc/argv ctor which assumes
      *  that argc is 0 and argv is a nullptr. See the argc/argv ctor's
      *  description for more details.
+     *
+     *  @param[in] callback_init The callback initialize function.
      *
      */
     template <typename T>
